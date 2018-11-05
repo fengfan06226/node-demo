@@ -2,6 +2,7 @@
 var http = require("http");
 var fs = require("fs");
 var url = require("url");
+var path = require("path");
 
 http.createServer(function(req,res){
 
@@ -23,8 +24,23 @@ http.createServer(function(req,res){
             })
             return;
         }
-        res.writeHead(200,{'Content-type':'text/html;charset=UTF-8'});
-        res.end(data);
+
+        // 获取文件的 mime 类型
+        var extname = path.extname(pathname);
+        dealMime(extname,function(mime){
+            res.writeHead(200,{'Content-type':''+ mime +';charset=UTF-8'});
+            res.end(data);
+        })
     })
     
 }).listen(3000,'127.0.0.1');
+
+var dealMime = function(extname, callback){
+    fs.readFile('mime.json',function(err,data){
+        if(err){
+            throw err;
+        }
+        var mimeJson = JSON.parse(data);
+        callback(mimeJson[extname])
+    })
+}
